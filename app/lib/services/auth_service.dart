@@ -188,7 +188,7 @@ class AuthService {
 
       final response = await _apiClient.request(
         method: 'PUT',
-        path: '/users/profile',
+        path: '/auth/profile',
         data: data,
       );
 

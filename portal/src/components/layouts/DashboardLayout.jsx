@@ -81,7 +81,16 @@ export const DashboardLayout = ({ children }) => {
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   const [showLogoutAlert, setShowLogoutAlert] = useState(false);
   const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
+  const [showProfileUpdateModal, setShowProfileUpdateModal] = useState(false);
   const [changePasswordData, setChangePasswordData] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
+  const [profileUpdateData, setProfileUpdateData] = useState({
+    name: user?.name || "",
+    phone: user?.phone || "",
+    address: user?.address || "",
     currentPassword: "",
     newPassword: "",
     confirmPassword: "",
@@ -90,6 +99,7 @@ export const DashboardLayout = ({ children }) => {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [changingPassword, setChangingPassword] = useState(false);
+  const [updatingProfile, setUpdatingProfile] = useState(false);
  
   const { toast } = useToast();
 
@@ -110,6 +120,18 @@ export const DashboardLayout = ({ children }) => {
       window.removeEventListener('resize', handleResize);
     };
   }, []);
+
+  // Update profile data when user changes
+  useEffect(() => {
+    setProfileUpdateData({
+      name: user?.name || "",
+      phone: user?.phone || "",
+      address: user?.address || "",
+      currentPassword: "",
+      newPassword: "",
+      confirmPassword: "",
+    });
+  }, [user]);
 
   // Navigation items for E-Courier system
   const navItems = [
@@ -271,6 +293,102 @@ export const DashboardLayout = ({ children }) => {
       });
     } finally {
       setChangingPassword(false);
+    }
+  };
+
+  const handleProfileUpdate = async (e) => {
+    e.preventDefault();
+    if (updatingProfile) return;
+
+    const { name, phone, address, currentPassword, newPassword, confirmPassword } = profileUpdateData;
+
+    // Validate required fields
+    if (!name || !phone) {
+      toast({
+        title: "Missing information",
+        description: "Name and phone are required",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validate password if being changed
+    if (newPassword) {
+      if (!currentPassword) {
+        toast({
+          title: "Missing information",
+          description: "Current password is required when changing password",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const passwordError = validatePassword(newPassword);
+      if (passwordError) {
+        toast({
+          title: "Invalid password",
+          description: passwordError,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (newPassword !== confirmPassword) {
+        toast({
+          title: "Password mismatch",
+          description: "New password and confirm password do not match",
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+
+    setUpdatingProfile(true);
+    try {
+      const updateData = {
+        name,
+        phone,
+        address,
+      };
+
+      if (newPassword) {
+        updateData.currentPassword = currentPassword;
+        updateData.newPassword = newPassword;
+      }
+
+      const response = await api.put("/auth/profile", updateData);
+
+      if (response.data.success) {
+        toast({
+          title: "Success",
+          description: "Profile updated successfully",
+        });
+
+        // Update local user data
+        if (response.data.data) {
+          // You might need to update the auth context here
+          // This depends on how your auth context is structured
+        }
+
+        setShowProfileUpdateModal(false);
+        setProfileUpdateData({
+          name: response.data.data?.name || "",
+          phone: response.data.data?.phone || "",
+          address: response.data.data?.address || "",
+          currentPassword: "",
+          newPassword: "",
+          confirmPassword: "",
+        });
+      }
+    } catch (error) {
+      console.error("Profile update error:", error);
+      toast({
+        title: "Error",
+        description: error.response?.data?.message || "Failed to update profile",
+        variant: "destructive",
+      });
+    } finally {
+      setUpdatingProfile(false);
     }
   };
 
@@ -524,14 +642,14 @@ export const DashboardLayout = ({ children }) => {
                   </div>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                {/* <DropdownMenuItem onClick={() => navigate("/admin/profile")}>
+                <DropdownMenuItem onClick={() => setShowProfileUpdateModal(true)}>
                   <UserCircle className="mr-2 h-4 w-4" />
-                  <span>Profile</span>
-                </DropdownMenuItem> */}
-                {/* <DropdownMenuItem onClick={() => setShowChangePasswordModal(true)}>
+                  <span>Update Profile</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setShowChangePasswordModal(true)}>
                   <KeyRound className="mr-2 h-4 w-4" />
                   <span>Change Password</span>
-                </DropdownMenuItem> */}
+                </DropdownMenuItem>
                
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
@@ -669,6 +787,160 @@ export const DashboardLayout = ({ children }) => {
                   </>
                 ) : (
                   "Change Password"
+                )}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Profile Update Modal */}
+      <Dialog open={showProfileUpdateModal} onOpenChange={setShowProfileUpdateModal}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Update Profile</DialogTitle>
+            <DialogDescription>
+              Update your profile information. Password change is optional.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleProfileUpdate} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="profileName">Full Name</Label>
+              <Input
+                id="profileName"
+                value={profileUpdateData.name}
+                onChange={(e) => setProfileUpdateData(prev => ({
+                  ...prev,
+                  name: e.target.value
+                }))}
+                placeholder="Enter your full name"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="profilePhone">Phone Number</Label>
+              <Input
+                id="profilePhone"
+                value={profileUpdateData.phone}
+                onChange={(e) => setProfileUpdateData(prev => ({
+                  ...prev,
+                  phone: e.target.value
+                }))}
+                placeholder="Enter your phone number"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="profileAddress">Address</Label>
+              <Input
+                id="profileAddress"
+                value={profileUpdateData.address}
+                onChange={(e) => setProfileUpdateData(prev => ({
+                  ...prev,
+                  address: e.target.value
+                }))}
+                placeholder="Enter your address"
+              />
+            </div>
+
+            <div className="border-t pt-4">
+              <h4 className="font-medium mb-2">Password (Optional)</h4>
+              <p className="text-sm text-muted-foreground mb-4">
+                Leave blank if you don't want to change your password
+              </p>
+
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="profileCurrentPassword">Current Password</Label>
+                  <div className="relative">
+                    <Input
+                      id="profileCurrentPassword"
+                      type={showCurrentPassword ? "text" : "password"}
+                      value={profileUpdateData.currentPassword}
+                      onChange={(e) => setProfileUpdateData(prev => ({
+                        ...prev,
+                        currentPassword: e.target.value
+                      }))}
+                      className="pr-10"
+                      placeholder="Enter current password"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary"
+                    >
+                      {showCurrentPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="profileNewPassword">New Password</Label>
+                  <div className="relative">
+                    <Input
+                      id="profileNewPassword"
+                      type={showNewPassword ? "text" : "password"}
+                      value={profileUpdateData.newPassword}
+                      onChange={(e) => setProfileUpdateData(prev => ({
+                        ...prev,
+                        newPassword: e.target.value
+                      }))}
+                      className="pr-10"
+                      placeholder="Enter new password"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowNewPassword(!showNewPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary"
+                    >
+                      {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="profileConfirmPassword">Confirm New Password</Label>
+                  <div className="relative">
+                    <Input
+                      id="profileConfirmPassword"
+                      type={showConfirmPassword ? "text" : "password"}
+                      value={profileUpdateData.confirmPassword}
+                      onChange={(e) => setProfileUpdateData(prev => ({
+                        ...prev,
+                        confirmPassword: e.target.value
+                      }))}
+                      className="pr-10"
+                      placeholder="Confirm new password"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary"
+                    >
+                      {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-3 pt-4">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setShowProfileUpdateModal(false)}
+                disabled={updatingProfile}
+              >
+                Cancel
+              </Button>
+              <Button type="submit" disabled={updatingProfile}>
+                {updatingProfile ? (
+                  <>
+                    <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
+                    Updating...
+                  </>
+                ) : (
+                  "Update Profile"
                 )}
               </Button>
             </div>

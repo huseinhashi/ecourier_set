@@ -365,7 +365,9 @@ export const updateCurrentUser = async (req, res, next) => {
         message: "User not found",
       });
     }
-    const { name, phone, password, address } = req.body;
+    
+    const { name, phone, address, currentPassword, newPassword } = req.body;
+    
     // Inline validation (partial, exclude role)
     if (name && (typeof name !== "string" || name.length < 2)) {
       return res.status(400).json({
@@ -379,7 +381,7 @@ export const updateCurrentUser = async (req, res, next) => {
         message: "Phone number must be 10-15 digits.",
       });
     }
-    if (password && (typeof password !== "string" || password.length < 8)) {
+    if (newPassword && (typeof newPassword !== "string" || newPassword.length < 8)) {
       return res.status(400).json({
         success: false,
         message: "Password must be at least 8 characters.",
@@ -407,10 +409,31 @@ export const updateCurrentUser = async (req, res, next) => {
       }
     }
 
+    // If updating password, verify current password
+    if (newPassword) {
+      if (!currentPassword) {
+        return res.status(400).json({
+          success: false,
+          message: "Current password is required when updating password",
+        });
+      }
+      
+      // Verify current password
+      const isCurrentPasswordValid = await user.comparePassword(currentPassword);
+      if (!isCurrentPasswordValid) {
+        return res.status(400).json({
+          success: false,
+          message: "Current password is incorrect",
+        });
+      }
+    }
+
+    // Update user fields
     if (name) user.name = name;
     if (phone) user.phone = phone;
-    if (password) user.password = password;
+    if (newPassword) user.password = newPassword;
     if (address !== undefined) user.address = address;
+    
     await user.save();
 
     const userWithoutPassword = user.toObject();
@@ -419,6 +442,7 @@ export const updateCurrentUser = async (req, res, next) => {
     res.json({
       success: true,
       data: userWithoutPassword,
+      message: "Profile updated successfully",
     });
   } catch (error) {
     next(error);

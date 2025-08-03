@@ -472,6 +472,31 @@ class CourierProfileScreen extends StatelessWidget {
                   children: [
                     const SizedBox(height: 20),
 
+                    // Edit Profile Button
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: authProvider.isLoading
+                            ? null
+                            : () => _showEditProfileDialog(context, authProvider, user),
+                        icon: const Icon(Icons.edit_outlined),
+                        label: const Text('Edit Profile'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: theme.colorScheme.primary,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          textStyle: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          elevation: 2,
+                        ),
+                      ),
+                    ),
+
                     const SizedBox(height: 24),
 
                     // Profile Information Cards
@@ -719,6 +744,193 @@ class CourierProfileScreen extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
         ),
       ),
+    );
+  }
+
+  void _showEditProfileDialog(BuildContext context, AuthProvider authProvider, Map<String, dynamic> user) {
+    final nameController = TextEditingController(text: user['name'] ?? '');
+    final phoneController = TextEditingController(text: user['phone'] ?? '');
+    final addressController = TextEditingController(text: user['address'] ?? '');
+    final currentPasswordController = TextEditingController();
+    final newPasswordController = TextEditingController();
+    final confirmPasswordController = TextEditingController();
+    
+    bool showCurrentPassword = false;
+    bool showNewPassword = false;
+    bool showConfirmPassword = false;
+    bool isUpdating = false;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: const Text('Edit Profile'),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Name field
+                    TextField(
+                      controller: nameController,
+                      decoration: const InputDecoration(
+                        labelText: 'Full Name',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    
+                    // Phone field
+                    TextField(
+                      controller: phoneController,
+                      decoration: const InputDecoration(
+                        labelText: 'Phone Number',
+                        border: OutlineInputBorder(),
+                      ),
+                      keyboardType: TextInputType.phone,
+                    ),
+                    const SizedBox(height: 16),
+                    
+                    // Address field
+                    TextField(
+                      controller: addressController,
+                      decoration: const InputDecoration(
+                        labelText: 'Address',
+                        border: OutlineInputBorder(),
+                      ),
+                      maxLines: 2,
+                    ),
+                    const SizedBox(height: 24),
+                    
+                    // Password section
+                    const Text(
+                      'Password (Optional)',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Leave blank if you don\'t want to change your password',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    
+                    // Current password
+                    TextField(
+                      controller: currentPasswordController,
+                      obscureText: !showCurrentPassword,
+                      decoration: InputDecoration(
+                        labelText: 'Current Password',
+                        border: const OutlineInputBorder(),
+                        suffixIcon: IconButton(
+                          icon: Icon(showCurrentPassword ? Icons.visibility_off : Icons.visibility),
+                          onPressed: () => setState(() => showCurrentPassword = !showCurrentPassword),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    
+                    // New password
+                    TextField(
+                      controller: newPasswordController,
+                      obscureText: !showNewPassword,
+                      decoration: InputDecoration(
+                        labelText: 'New Password',
+                        border: const OutlineInputBorder(),
+                        suffixIcon: IconButton(
+                          icon: Icon(showNewPassword ? Icons.visibility_off : Icons.visibility),
+                          onPressed: () => setState(() => showNewPassword = !showNewPassword),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    
+                    // Confirm password
+                    TextField(
+                      controller: confirmPasswordController,
+                      obscureText: !showConfirmPassword,
+                      decoration: InputDecoration(
+                        labelText: 'Confirm New Password',
+                        border: const OutlineInputBorder(),
+                        suffixIcon: IconButton(
+                          icon: Icon(showConfirmPassword ? Icons.visibility_off : Icons.visibility),
+                          onPressed: () => setState(() => showConfirmPassword = !showConfirmPassword),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: isUpdating ? null : () => Navigator.of(context).pop(),
+                  child: const Text('Cancel'),
+                ),
+                ElevatedButton(
+                  onPressed: isUpdating ? null : () async {
+                    // Validate password fields
+                    if (newPasswordController.text.isNotEmpty) {
+                      if (currentPasswordController.text.isEmpty) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Current password is required when changing password')),
+                        );
+                        return;
+                      }
+                      if (newPasswordController.text != confirmPasswordController.text) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('New passwords do not match')),
+                        );
+                        return;
+                      }
+                      if (newPasswordController.text.length < 8) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Password must be at least 8 characters')),
+                        );
+                        return;
+                      }
+                    }
+                    
+                    setState(() => isUpdating = true);
+                    
+                    final success = await authProvider.updateProfile(
+                      name: nameController.text.trim(),
+                      phone: phoneController.text.trim(),
+                      address: addressController.text.trim(),
+                      currentPassword: currentPasswordController.text.isNotEmpty ? currentPasswordController.text : null,
+                      newPassword: newPasswordController.text.isNotEmpty ? newPasswordController.text : null,
+                    );
+                    
+                    if (success && context.mounted) {
+                      Navigator.of(context).pop();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Profile updated successfully')),
+                      );
+                    } else if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text(authProvider.error ?? 'Failed to update profile')),
+                      );
+                    }
+                  },
+                  child: isUpdating
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Text('Update Profile'),
+                ),
+              ],
+            );
+          },
+        );
+      },
     );
   }
 }
