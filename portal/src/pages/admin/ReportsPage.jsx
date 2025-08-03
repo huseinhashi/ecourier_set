@@ -9,6 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import api from '@/lib/api_calls';
+import { shortenId } from '@/lib/utils';
 
 const REPORT_TYPES = [
   { label: 'Shipments', value: 'shipments' },
@@ -59,7 +60,7 @@ export const ReportsPage = () => {
   const columns = useMemo(() => {
     if (reportType === 'shipments') {
       return [
-        { accessorKey: '_id', header: 'ID', cell: ({ row }) => row.original._id || 'N/A' },
+        { accessorKey: '_id', header: 'ID', cell: ({ row }) => shortenId(row.original._id) },
         { accessorKey: 'sender', header: 'Sender', cell: ({ row }) => row.original.sender?.name || row.original.sender || 'N/A' },
         { accessorKey: 'receiver', header: 'Receiver', cell: ({ row }) => row.original.receiver?.name || (typeof row.original.receiver === 'string' ? row.original.receiver : 'N/A') },
         { accessorKey: 'originCity', header: 'Origin City', cell: ({ row }) => row.original.originCity?.name || row.original.originCity || 'N/A' },
@@ -72,7 +73,7 @@ export const ReportsPage = () => {
       ];
     } else if (reportType === 'users') {
       return [
-        { accessorKey: '_id', header: 'ID', cell: ({ row }) => row.original._id || 'N/A' },
+        { accessorKey: '_id', header: 'ID', cell: ({ row }) => shortenId(row.original._id) },
         { accessorKey: 'name', header: 'Name', cell: ({ row }) => row.original.name || 'N/A' },
         { accessorKey: 'phone', header: 'Phone', cell: ({ row }) => row.original.phone || 'N/A' },
         { accessorKey: 'role', header: 'Role', cell: ({ row }) => row.original.role || 'N/A' },
@@ -80,7 +81,7 @@ export const ReportsPage = () => {
       ];
     } else if (reportType === 'payments') {
       return [
-        { accessorKey: '_id', header: 'ID', cell: ({ row }) => row.original._id || 'N/A' },
+        { accessorKey: '_id', header: 'ID', cell: ({ row }) => shortenId(row.original._id) },
         { accessorKey: 'user', header: 'User', cell: ({ row }) => row.original.user?.name || row.original.user || 'N/A' },
         { accessorKey: 'amount', header: 'Amount', cell: ({ row }) => row.original.amount ?? 'N/A' },
         { accessorKey: 'status', header: 'Status', cell: ({ row }) => row.original.status || 'N/A' },

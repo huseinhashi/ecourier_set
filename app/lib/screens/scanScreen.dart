@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:provider/provider.dart';
 import 'package:app/providers/shipments_provider.dart';
+import 'dart:convert';
 
 class ScanScreen extends StatefulWidget {
   const ScanScreen({Key? key}) : super(key: key);
@@ -32,6 +33,121 @@ class _ScanScreenState extends State<ScanScreen> {
     final String? qrCode = barcodes.first.rawValue;
     if (qrCode == null || qrCode.isEmpty) return;
 
+    setState(() => isProcessing = true);
+
+    final provider = Provider.of<ShipmentsProvider>(context, listen: false);
+    
+    // Try to parse QR code as JSON first (new format with full details)
+    Map<String, dynamic>? qrData;
+    String qrCodeId = qrCode;
+    
+    try {
+      qrData = Map<String, dynamic>.from(jsonDecode(qrCode));
+      qrCodeId = qrData['qrCodeId'] ?? qrCode;
+    } catch (e) {
+      // If not JSON, use the QR code as is (old format with just ID)
+      qrCodeId = qrCode;
+    }
+    
+    // Get shipment details from QR code
+    final shipmentData = await provider.getShipmentFromQrCode(qrCodeId);
+    
+    setState(() {
+      isProcessing = false;
+    });
+
+    if (shipmentData != null) {
+      // Show confirmation dialog with shipment details
+      _showShipmentConfirmationDialog(shipmentData, qrCodeId);
+    } else {
+      setState(() {
+        resultMessage = provider.error ?? 'Failed to get shipment details';
+      });
+
+      await Future.delayed(const Duration(seconds: 2));
+      setState(() {
+        resultMessage = null;
+      });
+    }
+  }
+
+  void _showShipmentConfirmationDialog(Map<String, dynamic> shipmentData, String qrCode) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Shipment Details'),
+          content: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _buildDetailRow('Status', shipmentData['status'] ?? 'N/A'),
+                _buildDetailRow('Payment Status', shipmentData['paymentStatus'] ?? 'N/A'),
+                if (shipmentData['price'] != null)
+                  _buildDetailRow('Price', '\$${shipmentData['price']}'),
+                if (shipmentData['weight'] != null)
+                  _buildDetailRow('Weight', '${shipmentData['weight']} kg'),
+                const Divider(),
+                const Text('Sender Information', style: TextStyle(fontWeight: FontWeight.bold)),
+                _buildDetailRow('Name', shipmentData['sender']?['name'] ?? 'N/A'),
+                _buildDetailRow('Phone', shipmentData['sender']?['phone'] ?? 'N/A'),
+                _buildDetailRow('Address', shipmentData['sender']?['address'] ?? 'N/A'),
+                const Divider(),
+                const Text('Receiver Information', style: TextStyle(fontWeight: FontWeight.bold)),
+                _buildDetailRow('Name', shipmentData['receiver']?['name'] ?? 'N/A'),
+                _buildDetailRow('Phone', shipmentData['receiver']?['phone'] ?? 'N/A'),
+                _buildDetailRow('Address', shipmentData['receiver']?['address'] ?? 'N/A'),
+                const Divider(),
+                const Text('Route Information', style: TextStyle(fontWeight: FontWeight.bold)),
+                _buildDetailRow('From', shipmentData['originCity']?['name'] ?? 'N/A'),
+                _buildDetailRow('To', shipmentData['destinationCity']?['name'] ?? 'N/A'),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                Navigator.of(context).pop();
+                await _confirmPickup(qrCode);
+              },
+              child: const Text('Confirm Pickup'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildDetailRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 80,
+            child: Text(
+              '$label:',
+              style: const TextStyle(fontWeight: FontWeight.w500),
+            ),
+          ),
+          Expanded(
+            child: Text(value),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _confirmPickup(String qrCode) async {
     setState(() => isProcessing = true);
 
     final provider = Provider.of<ShipmentsProvider>(context, listen: false);

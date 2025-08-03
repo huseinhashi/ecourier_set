@@ -123,6 +123,15 @@ class ShipmentsService {
     );
   }
 
+  // Get shipment details from QR code (courier)
+  Future<Map<String, dynamic>> getShipmentFromQrCode(String qrCodeId) async {
+    return await _apiClient.request(
+      method: 'POST',
+      path: '/shipments/qr-details',
+      data: {'qrCodeId': qrCodeId},
+    );
+  }
+
   // Scan shipment by QR code (courier)
   Future<Map<String, dynamic>> scanPickup(String qrCodeId) async {
     return await _apiClient.request(

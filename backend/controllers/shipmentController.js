@@ -76,7 +76,39 @@ async function ensureQrCode(shipment) {
   if (!shipment.qrCodeId || !shipment.qrCodeImage || !fs.existsSync(qrPath)) {
     shipment.qrCodeId = `QR-${shipment._id}`;
     if (!fs.existsSync(qrDir)) fs.mkdirSync(qrDir, { recursive: true });
-    await QRCode.toFile(qrPath, shipment.qrCodeId);
+    
+    // Create detailed shipment data for QR code
+    const sender = await User.findById(shipment.sender);
+    const originCity = await City.findById(shipment.originCity);
+    const destinationCity = await City.findById(shipment.destinationCity);
+    
+    const shipmentData = {
+      id: shipment._id.toString(),
+      qrCodeId: shipment.qrCodeId,
+      status: shipment.status,
+      paymentStatus: shipment.paymentStatus,
+      price: shipment.price,
+      weight: shipment.weight,
+      sender: {
+        id: sender?._id?.toString(),
+        name: sender?.name,
+        phone: sender?.phone,
+        address: sender?.address,
+      },
+      receiver: shipment.receiver,
+      originCity: {
+        id: originCity?._id?.toString(),
+        name: originCity?.name,
+      },
+      destinationCity: {
+        id: destinationCity?._id?.toString(),
+        name: destinationCity?.name,
+      },
+      createdAt: shipment.createdAt,
+    };
+    
+    const qrContent = JSON.stringify(shipmentData);
+    await QRCode.toFile(qrPath, qrContent);
     shipment.qrCodeImage = `uploads/${qrFileName}`;
     await shipment.save();
   }
@@ -371,6 +403,38 @@ export const updateCourier = async (req, res, next) => {
 };
 
 // Courier scans QR code from customer phone to pick up shipment
+// Get shipment details from QR code (for confirmation before pickup)
+export const getShipmentFromQrCode = async (req, res, next) => {
+  try {
+    const { qrCodeId } = req.body;
+    console.log("QR Code ID:", qrCodeId);
+    const shipment = await Shipment.findOne({ qrCodeId })
+      .populate('sender', 'name phone address')
+      .populate('originCity', 'name')
+      .populate('destinationCity', 'name');
+    
+    if (!shipment)
+      return res
+        .status(404)
+        .json({ success: false, message: "Shipment not found" });
+    
+    if (shipment.status !== "Pending Pickup") {
+      return res.status(400).json({
+        success: false,
+        message: "Shipment already picked up or not ready for pickup",
+      });
+    }
+
+    res.json({
+      success: true,
+      data: shipment,
+      message: "Shipment details retrieved successfully",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const scanQrAndPickup = async (req, res, next) => {
   try {
     const { qrCodeId } = req.body;

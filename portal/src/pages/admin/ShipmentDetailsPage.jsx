@@ -15,6 +15,7 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@
 import { LoaderCircle } from "@/components/LoaderCircle";
 import api from "@/lib/api_calls";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { shortenId } from "@/lib/utils";
 
 export const ShipmentDetailsPage = () => {
   const { id } = useParams();
@@ -68,17 +69,19 @@ export const ShipmentDetailsPage = () => {
 
   const handleAssignCourier = async (type) => {
     setAssigning(true);
+    const courierId = type === "A" ? selectedCourierA : selectedCourierB;
     try {
       await request({
         method: 'POST',
         url: '/shipments/assign-courier',
-        data: { shipmentId: shipment._id, courierId: selectedCourier, type },
+        data: { shipmentId: shipment._id, courierId, type },
       }, {
         successMessage: `Courier ${type} assigned successfully`,
         onSuccess: () => {
           fetchShipment();
           fetchLogs();
-          setSelectedCourier("");
+          if (type === "A") setSelectedCourierA("");
+          if (type === "B") setSelectedCourierB("");
         },
       });
     } finally {
@@ -189,7 +192,7 @@ export const ShipmentDetailsPage = () => {
           <Button variant="outline" size="icon" onClick={() => navigate('/admin/shipments')}>
             <ArrowLeft className="h-4 w-4" />
           </Button>
-          <h2 className="text-3xl font-bold tracking-tight">Shipment #{shipment._id}</h2>
+          <h2 className="text-3xl font-bold tracking-tight">Shipment #{shortenId(shipment._id)}</h2>
         </div>
         {allowedStatuses.length > 0 && (
           <Button onClick={() => setShowStatusDialog(true)}>

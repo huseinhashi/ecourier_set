@@ -38,6 +38,13 @@ router.post(
   authenticate,
   shipmentController.markPaymentPaidAndGenerateQR
 );
+// Get shipment details from QR code (for confirmation)
+router.post(
+  "/qr-details",
+  authenticate,
+  restrictTo("courier"),
+  shipmentController.getShipmentFromQrCode
+);
 // Courier scans QR code to pick up
 router.post(
   "/scan-pickup",

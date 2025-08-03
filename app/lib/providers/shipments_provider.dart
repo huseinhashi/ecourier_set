@@ -328,6 +328,25 @@ class ShipmentsProvider extends ChangeNotifier {
     return [];
   }
 
+  Future<Map<String, dynamic>?> getShipmentFromQrCode(String qrCodeId) async {
+    try {
+      _setLoading(true);
+      clearError();
+      final response = await _shipmentsService.getShipmentFromQrCode(qrCodeId);
+      if (response['success'] == true) {
+        return response['data'];
+      } else {
+        _setError(response['message'] ?? 'Failed to get shipment details');
+        return null;
+      }
+    } catch (e) {
+      _setError('Error getting shipment details: $e');
+      return null;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
   Future<bool> scanPickup(String qrCodeId) async {
     try {
       _setLoading(true);

@@ -17,6 +17,7 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { Plus, Search, MoreHorizontal, Edit, Trash2, Eye } from "lucide-react";
+import { shortenId } from "@/lib/utils";
 
 export const ShipmentsPage = () => {
   const [shipments, setShipments] = useState([]);
@@ -51,7 +52,7 @@ export const ShipmentsPage = () => {
   const [editSameCity, setEditSameCity] = useState(false);
 
   const columns = [
-    { accessorKey: "_id", header: "ID", cell: ({ row }) => row.original._id || "N/A" },
+    { accessorKey: "_id", header: "ID", cell: ({ row }) => shortenId(row.original._id) },
     { accessorKey: "sender", header: "Sender", cell: ({ row }) => row.original.sender?.name || "N/A" },
     { accessorKey: "receiver", header: "Receiver", cell: ({ row }) => row.original.receiver?.name || "N/A" },
     { accessorKey: "originCity", header: "Origin City", cell: ({ row }) => row.original.originCity?.name || "N/A" },
