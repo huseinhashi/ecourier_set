@@ -693,7 +693,7 @@ export const DashboardLayout = ({ children }) => {
 
       {/* Change Password Modal */}
       <Dialog open={showChangePasswordModal} onOpenChange={setShowChangePasswordModal}>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className=" max-h-[80vh] overflow-y-auto sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>Change Password</DialogTitle>
             <DialogDescription>
@@ -796,7 +796,7 @@ export const DashboardLayout = ({ children }) => {
 
       {/* Profile Update Modal */}
       <Dialog open={showProfileUpdateModal} onOpenChange={setShowProfileUpdateModal}>
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent className="max-h-[80vh] overflow-y-auto sm:max-w-[500px]">
           <DialogHeader>
             <DialogTitle>Update Profile</DialogTitle>
             <DialogDescription>
