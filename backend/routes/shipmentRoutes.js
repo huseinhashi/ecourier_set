@@ -45,6 +45,13 @@ router.post(
   restrictTo("courier"),
   shipmentController.getShipmentFromQrCode
 );
+// Get basic shipment info regardless of pickup status
+router.post(
+  "/basic-info",
+  authenticate,
+  restrictTo("courier"),
+  shipmentController.getShipmentBasicInfo
+);
 // Courier scans QR code to pick up
 router.post(
   "/scan-pickup",

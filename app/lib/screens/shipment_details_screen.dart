@@ -134,7 +134,16 @@ class _ShipmentDetailsScreenState extends State<ShipmentDetailsScreen> {
                   Text('Phone: ${shipment!.receiverPhone}'),
                   Text('Address: ${shipment!.receiverAddress}'),
                 ] else ...[
-                  Text('From: ${shipment!.originCity}'),
+                  if (shipment!.senderName != null)
+                    Text('Name: ${shipment!.senderName}'),
+                  if (shipment!.senderPhone != null)
+                    Text('Phone: ${shipment!.senderPhone}'),
+                  if (shipment!.senderAddress != null)
+                    Text('Address: ${shipment!.senderAddress}'),
+                  if (shipment!.senderName == null && 
+                      shipment!.senderPhone == null && 
+                      shipment!.senderAddress == null)
+                    Text('From: ${shipment!.originCity}'),
                 ],
                 const SizedBox(height: 16),
                 Text('Route',

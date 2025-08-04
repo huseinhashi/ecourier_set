@@ -241,6 +241,7 @@ class ProfileScreen extends StatelessWidget {
     bool showNewPassword = false;
     bool showConfirmPassword = false;
     bool isUpdating = false;
+    String? errorMessage;
 
     showDialog(
       context: context,
@@ -254,6 +255,32 @@ class ProfileScreen extends StatelessWidget {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
+                    // Error message display
+                    if (errorMessage != null) ...[
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.red[50],
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: Colors.red[200]!),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(Icons.error_outline, color: Colors.red[600], size: 20),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                errorMessage!,
+                                style: TextStyle(color: Colors.red[700], fontSize: 14),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                    ],
+                    
                     // Name field
                     TextField(
                       controller: nameController,
@@ -357,24 +384,21 @@ class ProfileScreen extends StatelessWidget {
                 ),
                 ElevatedButton(
                   onPressed: isUpdating ? null : () async {
+                    // Clear previous error
+                    setState(() => errorMessage = null);
+                    
                     // Validate password fields
                     if (newPasswordController.text.isNotEmpty) {
                       if (currentPasswordController.text.isEmpty) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Current password is required when changing password')),
-                        );
+                        setState(() => errorMessage = 'Current password is required when changing password');
                         return;
                       }
                       if (newPasswordController.text != confirmPasswordController.text) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('New passwords do not match')),
-                        );
+                        setState(() => errorMessage = 'New passwords do not match');
                         return;
                       }
                       if (newPasswordController.text.length < 8) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Password must be at least 8 characters')),
-                        );
+                        setState(() => errorMessage = 'Password must be at least 8 characters');
                         return;
                       }
                     }
@@ -395,9 +419,10 @@ class ProfileScreen extends StatelessWidget {
                         const SnackBar(content: Text('Profile updated successfully')),
                       );
                     } else if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text(authProvider.error ?? 'Failed to update profile')),
-                      );
+                      setState(() {
+                        isUpdating = false;
+                        errorMessage = authProvider.error ?? 'Failed to update profile';
+                      });
                     }
                   },
                   child: isUpdating

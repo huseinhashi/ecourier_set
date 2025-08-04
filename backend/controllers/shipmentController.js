@@ -417,18 +417,37 @@ export const getShipmentFromQrCode = async (req, res, next) => {
       return res
         .status(404)
         .json({ success: false, message: "Shipment not found" });
-    
-    if (shipment.status !== "Pending Pickup") {
-      return res.status(400).json({
-        success: false,
-        message: "Shipment already picked up or not ready for pickup",
-      });
-    }
 
+    // Always return shipment data regardless of status
     res.json({
       success: true,
       data: shipment,
       message: "Shipment details retrieved successfully",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getShipmentBasicInfo = async (req, res, next) => {
+  try {
+    const { qrCodeId } = req.body;
+    console.log("QR Code ID:", qrCodeId);
+    const shipment = await Shipment.findOne({ qrCodeId })
+      .populate('sender', 'name phone address')
+      .populate('originCity', 'name')
+      .populate('destinationCity', 'name');
+    
+    if (!shipment)
+      return res
+        .status(404)
+        .json({ success: false, message: "Shipment not found" });
+
+    // Always return shipment data regardless of status
+    res.json({
+      success: true,
+      data: shipment,
+      message: "Shipment basic info retrieved successfully",
     });
   } catch (error) {
     next(error);

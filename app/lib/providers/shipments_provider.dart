@@ -13,8 +13,10 @@ class Shipment {
   final double? price;
   final DateTime createdAt;
   final String? senderName;
+  final String? senderPhone;
+  final String? senderAddress;
   final double? weight;
-  final String? qrCodeImage; // <-- Add this
+  final String? qrCodeImage;
 
   Shipment({
     required this.id,
@@ -28,6 +30,8 @@ class Shipment {
     this.price,
     required this.createdAt,
     this.senderName,
+    this.senderPhone,
+    this.senderAddress,
     this.weight,
     this.qrCodeImage,
   });
@@ -40,10 +44,26 @@ class Shipment {
     DateTime getDateTime(dynamic value) => value == null
         ? DateTime.now()
         : DateTime.tryParse(value.toString()) ?? DateTime.now();
+    
+    // Extract sender information
     String? getSenderName(dynamic sender) {
       if (sender == null) return null;
       if (sender is Map && sender['name'] != null)
         return sender['name'].toString();
+      return null;
+    }
+    
+    String? getSenderPhone(dynamic sender) {
+      if (sender == null) return null;
+      if (sender is Map && sender['phone'] != null)
+        return sender['phone'].toString();
+      return null;
+    }
+    
+    String? getSenderAddress(dynamic sender) {
+      if (sender == null) return null;
+      if (sender is Map && sender['address'] != null)
+        return sender['address'].toString();
       return null;
     }
 
@@ -60,6 +80,8 @@ class Shipment {
       price: getDouble(json['price']),
       createdAt: getDateTime(json['createdAt']),
       senderName: getSenderName(json['sender']),
+      senderPhone: getSenderPhone(json['sender']),
+      senderAddress: getSenderAddress(json['sender']),
       weight: getDouble(json['weight']),
       qrCodeImage: json['qrCodeImage'] as String?,
     );
@@ -73,10 +95,26 @@ class Shipment {
     DateTime getDateTime(dynamic value) => value == null
         ? DateTime.now()
         : DateTime.tryParse(value.toString()) ?? DateTime.now();
+    
+    // Extract sender information
     String? getSenderName(dynamic sender) {
       if (sender == null) return null;
       if (sender is Map && sender['name'] != null)
         return sender['name'].toString();
+      return null;
+    }
+    
+    String? getSenderPhone(dynamic sender) {
+      if (sender == null) return null;
+      if (sender is Map && sender['phone'] != null)
+        return sender['phone'].toString();
+      return null;
+    }
+    
+    String? getSenderAddress(dynamic sender) {
+      if (sender == null) return null;
+      if (sender is Map && sender['address'] != null)
+        return sender['address'].toString();
       return null;
     }
 
@@ -99,6 +137,8 @@ class Shipment {
       price: getDouble(json['price']),
       createdAt: getDateTime(json['createdAt']),
       senderName: getSenderName(json['sender']),
+      senderPhone: getSenderPhone(json['sender']),
+      senderAddress: getSenderAddress(json['sender']),
       weight: getDouble(json['weight']),
       qrCodeImage: json['qrCodeImage'] as String?,
     );
@@ -121,22 +161,27 @@ class ShipmentsProvider extends ChangeNotifier {
   String? get error => _error;
 
   void clearError() {
-    _error = null;
-    notifyListeners();
+    if (_error != null) {
+      _error = null;
+      notifyListeners();
+    }
   }
 
   void clearErrorAfterShown() {
-    _error = null;
-    notifyListeners();
+    if (_error != null) {
+      _error = null;
+      notifyListeners();
+    }
   }
 
   void _setLoading(bool loading) {
-    _isLoading = loading;
-    notifyListeners();
+    if (_isLoading != loading) {
+      _isLoading = loading;
+      notifyListeners();
+    }
   }
 
   void _setError(String error) {
-    clearError();
     _error = error;
     notifyListeners();
   }
@@ -333,6 +378,7 @@ class ShipmentsProvider extends ChangeNotifier {
       _setLoading(true);
       clearError();
       final response = await _shipmentsService.getShipmentFromQrCode(qrCodeId);
+      
       if (response['success'] == true) {
         return response['data'];
       } else {

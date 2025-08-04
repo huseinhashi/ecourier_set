@@ -52,26 +52,36 @@ class _ScanScreenState extends State<ScanScreen> {
     // Get shipment details from QR code
     final shipmentData = await provider.getShipmentFromQrCode(qrCodeId);
     
+    if (!mounted) return; // Check if widget is still mounted
+    
     setState(() {
       isProcessing = false;
     });
 
     if (shipmentData != null) {
-      // Show confirmation dialog with shipment details
+      // Always show shipment details dialog
       _showShipmentConfirmationDialog(shipmentData, qrCodeId);
     } else {
+      // Show error message for invalid QR codes
       setState(() {
-        resultMessage = provider.error ?? 'Failed to get shipment details';
+        resultMessage = provider.error ?? 'Invalid QR code or shipment not found';
       });
 
       await Future.delayed(const Duration(seconds: 2));
-      setState(() {
-        resultMessage = null;
-      });
+      
+      if (mounted) {
+        setState(() {
+          resultMessage = null;
+        });
+      }
     }
   }
 
   void _showShipmentConfirmationDialog(Map<String, dynamic> shipmentData, String qrCode) {
+    // Check if shipment can be picked up
+    final currentStatus = shipmentData['status'] ?? 'Unknown';
+    final canPickup = currentStatus == 'Pending Pickup';
+    
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -83,7 +93,53 @@ class _ScanScreenState extends State<ScanScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                _buildDetailRow('Status', shipmentData['status'] ?? 'N/A'),
+                // Status section with color coding
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: _getStatusColor(currentStatus).withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: _getStatusColor(currentStatus).withOpacity(0.3),
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(
+                            _getStatusIcon(currentStatus),
+                            color: _getStatusColor(currentStatus),
+                            size: 20,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Status: $currentStatus',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: _getStatusColor(currentStatus),
+                              fontSize: 16,
+                            ),
+                          ),
+                        ],
+                      ),
+                      if (!canPickup) ...[
+                        const SizedBox(height: 8),
+                        Text(
+                          _getStatusMessage(currentStatus),
+                          style: TextStyle(
+                            color: Colors.grey[600],
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+                
                 _buildDetailRow('Payment Status', shipmentData['paymentStatus'] ?? 'N/A'),
                 if (shipmentData['price'] != null)
                   _buildDetailRow('Price', '\$${shipmentData['price']}'),
@@ -111,15 +167,16 @@ class _ScanScreenState extends State<ScanScreen> {
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: const Text('Cancel'),
+              child: const Text('Close'),
             ),
-            ElevatedButton(
-              onPressed: () async {
-                Navigator.of(context).pop();
-                await _confirmPickup(qrCode);
-              },
-              child: const Text('Confirm Pickup'),
-            ),
+            if (canPickup)
+              ElevatedButton(
+                onPressed: () async {
+                  Navigator.of(context).pop();
+                  await _confirmPickup(qrCode);
+                },
+                child: const Text('Confirm Pickup'),
+              ),
           ],
         );
       },
@@ -153,6 +210,8 @@ class _ScanScreenState extends State<ScanScreen> {
     final provider = Provider.of<ShipmentsProvider>(context, listen: false);
     final success = await provider.scanPickup(qrCode);
 
+    if (!mounted) return;
+
     setState(() {
       resultMessage = success
           ? 'Shipment picked up successfully!'
@@ -161,10 +220,12 @@ class _ScanScreenState extends State<ScanScreen> {
 
     await Future.delayed(const Duration(seconds: 2));
 
-    setState(() {
-      isProcessing = false;
-      resultMessage = null;
-    });
+    if (mounted) {
+      setState(() {
+        isProcessing = false;
+        resultMessage = null;
+      });
+    }
   }
 
   void _toggleFlash() async {
@@ -181,6 +242,67 @@ class _ScanScreenState extends State<ScanScreen> {
           ? CameraFacing.front
           : CameraFacing.back;
     });
+  }
+
+  Color _getStatusColor(String status) {
+    switch (status.toLowerCase()) {
+      case 'pending pickup':
+        return Colors.orange;
+      case 'picked up':
+        return Colors.blue;
+      case 'at origin hub':
+        return Colors.indigo;
+      case 'in transit':
+        return Colors.purple;
+      case 'at destination hub':
+        return Colors.teal;
+      case 'out for delivery':
+        return Colors.amber;
+      case 'delivered':
+        return Colors.green;
+      default:
+        return Colors.grey;
+    }
+  }
+
+  IconData _getStatusIcon(String status) {
+    switch (status.toLowerCase()) {
+      case 'pending pickup':
+        return Icons.schedule;
+      case 'picked up':
+        return Icons.local_shipping;
+      case 'at origin hub':
+        return Icons.warehouse;
+      case 'in transit':
+        return Icons.train;
+      case 'at destination hub':
+        return Icons.warehouse;
+      case 'out for delivery':
+        return Icons.delivery_dining;
+      case 'delivered':
+        return Icons.check_circle;
+      default:
+        return Icons.info;
+    }
+  }
+
+  String _getStatusMessage(String status) {
+    switch (status.toLowerCase()) {
+      case 'picked up':
+        return 'This shipment has already been picked up.';
+      case 'at origin hub':
+        return 'This shipment is at the origin hub.';
+      case 'in transit':
+        return 'This shipment is currently in transit.';
+      case 'at destination hub':
+        return 'This shipment has arrived at the destination hub.';
+      case 'out for delivery':
+        return 'This shipment is out for delivery.';
+      case 'delivered':
+        return 'This shipment has been delivered.';
+      default:
+        return 'This shipment cannot be picked up at this time.';
+    }
   }
 
   @override

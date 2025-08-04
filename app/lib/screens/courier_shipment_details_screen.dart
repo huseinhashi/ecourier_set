@@ -304,7 +304,49 @@ class _CourierShipmentDetailsScreenState
                       const SizedBox(height: 16),
                       Divider(),
                       const SizedBox(height: 8),
-                      Text('Receiver Info',
+                      Text('Sender Information',
+                          style: theme.textTheme.titleMedium
+                              ?.copyWith(fontWeight: FontWeight.w600)),
+                      const SizedBox(height: 8),
+                      if (shipment.senderName != null) ...[
+                        Row(
+                          children: [
+                            Icon(Icons.person_outline,
+                                color: theme.colorScheme.primary, size: 20),
+                            const SizedBox(width: 8),
+                            Text(shipment.senderName!),
+                          ],
+                        ),
+                        if (shipment.senderPhone != null) ...[
+                          const SizedBox(height: 4),
+                          Row(
+                            children: [
+                              Icon(Icons.phone,
+                                  color: theme.colorScheme.primary, size: 20),
+                              const SizedBox(width: 8),
+                              Text(shipment.senderPhone!),
+                            ],
+                          ),
+                        ],
+                        if (shipment.senderAddress != null) ...[
+                          const SizedBox(height: 4),
+                          Row(
+                            children: [
+                              Icon(Icons.location_on,
+                                  color: theme.colorScheme.primary, size: 20),
+                              const SizedBox(width: 8),
+                              Expanded(child: Text(shipment.senderAddress!)),
+                            ],
+                          ),
+                        ],
+                      ] else ...[
+                        Text('Sender information not available',
+                            style: TextStyle(color: Colors.grey[600])),
+                      ],
+                      const SizedBox(height: 16),
+                      Divider(),
+                      const SizedBox(height: 8),
+                      Text('Receiver Information',
                           style: theme.textTheme.titleMedium
                               ?.copyWith(fontWeight: FontWeight.w600)),
                       const SizedBox(height: 8),
@@ -331,7 +373,7 @@ class _CourierShipmentDetailsScreenState
                           Icon(Icons.location_on,
                               color: theme.colorScheme.primary, size: 20),
                           const SizedBox(width: 8),
-                          Text(shipment.receiverAddress),
+                          Expanded(child: Text(shipment.receiverAddress)),
                         ],
                       ),
                       const SizedBox(height: 16),

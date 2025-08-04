@@ -132,6 +132,15 @@ class ShipmentsService {
     );
   }
 
+  // Get basic shipment info regardless of pickup status
+  Future<Map<String, dynamic>> getShipmentBasicInfo(String qrCodeId) async {
+    return await _apiClient.request(
+      method: 'POST',
+      path: '/shipments/basic-info',
+      data: {'qrCodeId': qrCodeId},
+    );
+  }
+
   // Scan shipment by QR code (courier)
   Future<Map<String, dynamic>> scanPickup(String qrCodeId) async {
     return await _apiClient.request(
