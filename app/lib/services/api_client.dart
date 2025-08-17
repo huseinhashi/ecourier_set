@@ -9,8 +9,8 @@ class ApiClient {
   // Singleton pattern
   factory ApiClient() => _instance;
 
-  // static const String baseUrl = 'https://ecouriersystem.up.railway.app';
-  static const String baseUrl = 'http://localhost:6432';
+  static const String baseUrl = 'https://ecouriersystem.up.railway.app';
+  // static const String baseUrl = 'http://localhost:6432';
   ApiClient._internal() {
     _dio = Dio(
       BaseOptions(

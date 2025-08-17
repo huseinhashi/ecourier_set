@@ -70,6 +70,28 @@ export const ShipmentDetailsPage = () => {
   const handleAssignCourier = async (type) => {
     setAssigning(true);
     const courierId = type === "A" ? selectedCourierA : selectedCourierB;
+    
+    // Client-side validation
+    if (type === "B" && shipment.courierA && shipment.courierA._id === courierId) {
+      toast({ 
+        title: "Validation Error", 
+        description: "Courier B cannot be the same as Courier A",
+        variant: "destructive"
+      });
+      setAssigning(false);
+      return;
+    }
+    
+    if (type === "A" && shipment.courierB && shipment.courierB._id === courierId) {
+      toast({ 
+        title: "Validation Error", 
+        description: "Courier A cannot be the same as Courier B",
+        variant: "destructive"
+      });
+      setAssigning(false);
+      return;
+    }
+    
     try {
       await request({
         method: 'POST',
@@ -92,6 +114,26 @@ export const ShipmentDetailsPage = () => {
   const handleUpdateCourier = async (type) => {
     const courierId = type === "A" ? selectedCourierA : selectedCourierB;
     if (!courierId) return;
+    
+    // Client-side validation
+    if (type === "B" && shipment.courierA && shipment.courierA._id === courierId) {
+      toast({ 
+        title: "Validation Error", 
+        description: "Courier B cannot be the same as Courier A",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    if (type === "A" && shipment.courierB && shipment.courierB._id === courierId) {
+      toast({ 
+        title: "Validation Error", 
+        description: "Courier A cannot be the same as Courier B",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     setAssigning(true);
     try {
       await request({
@@ -250,9 +292,11 @@ export const ShipmentDetailsPage = () => {
                   <SelectValue placeholder="Assign Courier 1" />
                 </SelectTrigger>
                 <SelectContent>
-                  {couriers.map(c => (
-                    <SelectItem key={c._id} value={c._id}>{c.name}</SelectItem>
-                  ))}
+                  {couriers
+                    .filter(c => !shipment.courierB || c._id !== shipment.courierB._id)
+                    .map(c => (
+                      <SelectItem key={c._id} value={c._id}>{c.name}</SelectItem>
+                    ))}
                 </SelectContent>
               </Select>
               <Button onClick={() => handleAssignCourier("A")} disabled={!selectedCourierA || assigning}>
@@ -268,9 +312,11 @@ export const ShipmentDetailsPage = () => {
                   <SelectValue placeholder="Assign Courier 2" />
                 </SelectTrigger>
                 <SelectContent>
-                  {couriers.map(c => (
-                    <SelectItem key={c._id} value={c._id}>{c.name}</SelectItem>
-                  ))}
+                  {couriers
+                    .filter(c => !shipment.courierA || c._id !== shipment.courierA._id)
+                    .map(c => (
+                      <SelectItem key={c._id} value={c._id}>{c.name}</SelectItem>
+                    ))}
                 </SelectContent>
               </Select>
               <Button onClick={() => handleAssignCourier("B")} disabled={!selectedCourierB || assigning}>
@@ -333,9 +379,11 @@ export const ShipmentDetailsPage = () => {
                       <SelectValue placeholder={shipment.courierA?.name || "Assign Courier 1"} />
                     </SelectTrigger>
                     <SelectContent>
-                      {couriers.map(c => (
-                        <SelectItem key={c._id} value={c._id}>{c.name}</SelectItem>
-                      ))}
+                      {couriers
+                        .filter(c => !shipment.courierB || c._id !== shipment.courierB._id)
+                        .map(c => (
+                          <SelectItem key={c._id} value={c._id}>{c.name}</SelectItem>
+                        ))}
                     </SelectContent>
                   </Select>
                   <Button onClick={() => handleUpdateCourier("A")} disabled={!selectedCourierA || assigning}>
@@ -355,9 +403,11 @@ export const ShipmentDetailsPage = () => {
                           <SelectValue placeholder={shipment.courierB?.name || "Assign Courier 2"} />
                         </SelectTrigger>
                         <SelectContent>
-                          {couriers.map(c => (
-                            <SelectItem key={c._id} value={c._id}>{c.name}</SelectItem>
-                          ))}
+                          {couriers
+                            .filter(c => !shipment.courierA || c._id !== shipment.courierA._id)
+                            .map(c => (
+                              <SelectItem key={c._id} value={c._id}>{c.name}</SelectItem>
+                            ))}
                         </SelectContent>
                       </Select>
                       <Button onClick={() => handleUpdateCourier("B")} disabled={!selectedCourierB || assigning}>

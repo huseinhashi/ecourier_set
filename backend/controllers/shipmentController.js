@@ -317,12 +317,29 @@ export const assignCourier = async (req, res, next) => {
       return res
         .status(404)
         .json({ success: false, message: "Shipment not found" });
-    if (type === "A") shipment.courierA = courierId;
-    else if (type === "B") shipment.courierB = courierId;
-    else
+    
+    // Validate courier type
+    if (type !== "A" && type !== "B") {
       return res
         .status(400)
         .json({ success: false, message: "Type must be 'A' or 'B'" });
+    }
+
+    // Check if courier A and B are the same person
+    if (type === "B" && shipment.courierA && shipment.courierA.toString() === courierId.toString()) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Courier B cannot be the same as Courier A" });
+    }
+
+    if (type === "A" && shipment.courierB && shipment.courierB.toString() === courierId.toString()) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Courier A cannot be the same as Courier B" });
+    }
+
+    if (type === "A") shipment.courierA = courierId;
+    else if (type === "B") shipment.courierB = courierId;
 
     await shipment.save();
 
@@ -361,6 +378,12 @@ export const updateCourier = async (req, res, next) => {
       shipment.destinationCity._id.toString();
 
     if (type === "A") {
+      // Check if courier A and B are the same person
+      if (shipment.courierB && shipment.courierB.toString() === courierId.toString()) {
+        return res
+          .status(400)
+          .json({ success: false, message: "Courier A cannot be the same as Courier B" });
+      }
       shipment.courierA = courierId;
     } else if (type === "B") {
       if (isSameCity) {
@@ -375,6 +398,12 @@ export const updateCourier = async (req, res, next) => {
           message:
             "Courier B can only be assigned when shipment is at Destination Hub",
         });
+      }
+      // Check if courier A and B are the same person
+      if (shipment.courierA && shipment.courierA.toString() === courierId.toString()) {
+        return res
+          .status(400)
+          .json({ success: false, message: "Courier B cannot be the same as Courier A" });
       }
       shipment.courierB = courierId;
     } else {
@@ -577,7 +606,22 @@ export const markPaymentPaidAndGenerateQR = async (req, res, next) => {
       { paymentResult, paymentId: payment._id }
     );
 
-    res.json({ success: true, data: shipment, payment });
+    // Only return success if payment was actually completed
+    if (status === "completed") {
+      res.json({ 
+        success: true, 
+        data: shipment, 
+        payment,
+        message: "Payment processed successfully"
+      });
+    } else {
+      res.json({ 
+        success: false, 
+        data: shipment, 
+        payment,
+        message: paymentResult?.error || "Payment failed"
+      });
+    }
   } catch (error) {
     next(error);
   }

@@ -164,7 +164,14 @@ export const CustomersPage = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    
+    // Special handling for phone field - only allow digits
+    if (name === 'phone') {
+      const digitsOnly = value.replace(/\D/g, '');
+      setFormData((prev) => ({ ...prev, [name]: digitsOnly }));
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    }
     
     // Clear field-specific error when user starts typing
     clearFieldError(name);
@@ -190,8 +197,16 @@ export const CustomersPage = () => {
     if (!phone.trim()) {
       return "Phone number is required";
     }
-    if (!/^\d{10,15}$/.test(phone.replace(/\s/g, ''))) {
-      return "Phone number must be 10-15 digits";
+    // Remove all non-digit characters for validation
+    const cleanPhone = phone.replace(/\D/g, '');
+    if (cleanPhone.length < 10) {
+      return "Phone number must be at least 10 digits";
+    }
+    if (cleanPhone.length > 15) {
+      return "Phone number must be at most 15 digits";
+    }
+    if (!/^\d+$/.test(cleanPhone)) {
+      return "Phone number can only contain digits";
     }
     return null;
   };
