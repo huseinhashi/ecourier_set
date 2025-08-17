@@ -46,9 +46,7 @@ class _CustomerDashboardScreenState extends State<CustomerDashboardScreen> {
               const SizedBox(width: 8),
               Text(
                 'Logout',
-                style: GoogleFonts.poppins(
-                  fontWeight: FontWeight.w600,
-                ),
+                style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
               ),
             ],
           ),
@@ -61,20 +59,21 @@ class _CustomerDashboardScreenState extends State<CustomerDashboardScreen> {
               onPressed: () => Navigator.of(context).pop(),
               child: Text(
                 'Cancel',
-                style: GoogleFonts.poppins(
-                  color: Colors.grey[600],
-                ),
+                style: GoogleFonts.poppins(color: Colors.grey[600]),
               ),
             ),
             TextButton(
               onPressed: () async {
                 Navigator.of(context).pop();
-                final authProvider =
-                    Provider.of<AuthProvider>(context, listen: false);
+                final authProvider = Provider.of<AuthProvider>(
+                  context,
+                  listen: false,
+                );
                 final success = await authProvider.logout();
                 if (success && mounted) {
-                  Navigator.of(context)
-                      .pushNamedAndRemoveUntil('/login', (route) => false);
+                  Navigator.of(
+                    context,
+                  ).pushNamedAndRemoveUntil('/login', (route) => false);
                 }
               },
               style: TextButton.styleFrom(
@@ -82,9 +81,7 @@ class _CustomerDashboardScreenState extends State<CustomerDashboardScreen> {
               ),
               child: Text(
                 'Logout',
-                style: GoogleFonts.poppins(
-                  fontWeight: FontWeight.w600,
-                ),
+                style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
               ),
             ),
           ],
@@ -154,11 +151,7 @@ class _CustomerDashboardScreenState extends State<CustomerDashboardScreen> {
                 color: Colors.grey[100],
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: Icon(
-                Icons.logout,
-                color: Colors.grey[600],
-                size: 20,
-              ),
+              child: Icon(Icons.logout, color: Colors.grey[600], size: 20),
             ),
             onPressed: _showLogoutDialog,
           ),
@@ -166,10 +159,7 @@ class _CustomerDashboardScreenState extends State<CustomerDashboardScreen> {
         ],
       ),
       body: SafeArea(
-        child: IndexedStack(
-          index: _selectedIndex,
-          children: _pages,
-        ),
+        child: IndexedStack(index: _selectedIndex, children: _pages),
       ),
       floatingActionButton: _selectedIndex == 0
           ? FloatingActionButton(
@@ -212,16 +202,22 @@ class _CustomerDashboardScreenState extends State<CustomerDashboardScreen> {
               label: "Home",
             ),
             NavigationDestination(
-              icon:
-                  Icon(Icons.local_shipping_outlined, color: Colors.grey[600]),
-              selectedIcon:
-                  Icon(Icons.local_shipping, color: theme.colorScheme.primary),
+              icon: Icon(
+                Icons.local_shipping_outlined,
+                color: Colors.grey[600],
+              ),
+              selectedIcon: Icon(
+                Icons.local_shipping,
+                color: theme.colorScheme.primary,
+              ),
               label: "Shipments",
             ),
             NavigationDestination(
               icon: Icon(Icons.person_outline, color: Colors.grey[600]),
-              selectedIcon:
-                  Icon(Icons.person, color: theme.colorScheme.primary),
+              selectedIcon: Icon(
+                Icons.person,
+                color: theme.colorScheme.primary,
+              ),
               label: "Profile",
             ),
           ],
@@ -404,7 +400,6 @@ class CustomerHomeScreen extends StatelessWidget {
           //     ),
           //   ],
           // ),
-
           const SizedBox(height: 24),
 
           // Recent Shipments
@@ -450,10 +445,7 @@ class CustomerHomeScreen extends StatelessWidget {
                       const SizedBox(height: 8),
                       Text(
                         'Create your first shipment to get started',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey[500],
-                        ),
+                        style: TextStyle(fontSize: 14, color: Colors.grey[500]),
                         textAlign: TextAlign.center,
                       ),
                     ],
@@ -466,13 +458,20 @@ class CustomerHomeScreen extends StatelessWidget {
                         elevation: 4,
                         margin: const EdgeInsets.only(bottom: 12),
                         shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14)),
+                          borderRadius: BorderRadius.circular(14),
+                        ),
                         child: ListTile(
                           contentPadding: const EdgeInsets.symmetric(
-                              vertical: 14, horizontal: 18),
-                          title: Text('To: ${shipment.receiverName}',
-                              style: const TextStyle(
-                                  fontWeight: FontWeight.bold, fontSize: 16)),
+                            vertical: 14,
+                            horizontal: 18,
+                          ),
+                          title: Text(
+                            'To: ${shipment.receiverName}',
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
                           subtitle: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -483,26 +482,27 @@ class CustomerHomeScreen extends StatelessWidget {
                                     label: Text(shipment.status),
                                     backgroundColor:
                                         shipment.status == 'Delivered'
-                                            ? Colors.green[100]
-                                            : shipment.status == 'Picked Up'
-                                                ? Colors.orange[100]
-                                                : Colors.grey[200],
+                                        ? Colors.green[100]
+                                        : shipment.status == 'Picked Up'
+                                        ? Colors.orange[100]
+                                        : Colors.grey[200],
                                     labelStyle: TextStyle(
                                       color: shipment.status == 'Delivered'
                                           ? Colors.green[800]
                                           : shipment.status == 'Picked Up'
-                                              ? Colors.orange[800]
-                                              : Colors.grey[800],
+                                          ? Colors.orange[800]
+                                          : Colors.grey[800],
                                     ),
                                   ),
                                   const SizedBox(width: 8),
                                   Chip(
                                     label: Text(
-                                        'Payment: ${shipment.paymentStatus}'),
+                                      'Payment: ${shipment.paymentStatus}',
+                                    ),
                                     backgroundColor:
                                         shipment.paymentStatus == 'paid'
-                                            ? Colors.green[100]
-                                            : Colors.red[100],
+                                        ? Colors.green[100]
+                                        : Colors.red[100],
                                     labelStyle: TextStyle(
                                       color: shipment.paymentStatus == 'paid'
                                           ? Colors.green[800]
@@ -555,10 +555,7 @@ class _RegisterShipmentDialogState extends State<RegisterShipmentDialog> {
   final _destinationCityController = TextEditingController();
   final ShipmentsService _shipmentsService = ShipmentsService();
 
-  List<Map<String, dynamic>> _users = [];
   List<Map<String, dynamic>> _cities = [];
-  String _receiverType = 'dropdown';
-  String? _selectedReceiverUserId;
   String? _selectedOriginCityId;
   String? _selectedDestinationCityId;
   bool _loadingDropdowns = true;
@@ -572,14 +569,10 @@ class _RegisterShipmentDialogState extends State<RegisterShipmentDialog> {
   Future<void> _fetchDropdownData() async {
     setState(() => _loadingDropdowns = true);
     try {
-      final usersResp = await _shipmentsService.fetchCustomers();
       final citiesResp = await _shipmentsService.fetchCities();
       setState(() {
-        _users = (usersResp['data'] as List?)
-                ?.map((e) => Map<String, dynamic>.from(e))
-                .toList() ??
-            [];
-        _cities = (citiesResp['data'] as List?)
+        _cities =
+            (citiesResp['data'] as List?)
                 ?.map((e) => Map<String, dynamic>.from(e))
                 .toList() ??
             [];
@@ -626,107 +619,85 @@ class _RegisterShipmentDialogState extends State<RegisterShipmentDialog> {
                         color: theme.colorScheme.primary.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: Icon(Icons.local_shipping,
-                          color: theme.colorScheme.primary, size: 28),
+                      child: Icon(
+                        Icons.local_shipping,
+                        color: theme.colorScheme.primary,
+                        size: 28,
+                      ),
                     ),
                     const SizedBox(width: 12),
-                    Text('Register New Shipment',
-                        style: theme.textTheme.titleLarge
-                            ?.copyWith(fontWeight: FontWeight.bold)),
+                    Text(
+                      'Register New Shipment',
+                      style: theme.textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 20),
                 if (_loadingDropdowns)
                   const Center(child: CircularProgressIndicator())
                 else ...[
-                  Text('Receiver',
-                      style: theme.textTheme.titleMedium
-                          ?.copyWith(fontWeight: FontWeight.w600)),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      const Icon(Icons.person_outline, size: 20),
-                      const SizedBox(width: 8),
-                      DropdownButton<String>(
-                        value: _receiverType,
-                        items: const [
-                          DropdownMenuItem(
-                              value: 'dropdown',
-                              child: Text('Registered Customer')),
-                          DropdownMenuItem(
-                              value: 'manual', child: Text('Manual Entry')),
-                        ],
-                        onChanged: (value) {
-                          if (value != null)
-                            setState(() => _receiverType = value);
-                        },
-                      ),
-                    ],
+                  Text(
+                    'Receiver',
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                   const SizedBox(height: 8),
-                  if (_receiverType == 'dropdown')
-                    DropdownButtonFormField<String>(
-                      value: _selectedReceiverUserId,
-                      items: _users
-                          .map((user) => DropdownMenuItem<String>(
-                                value: user['_id'] as String,
-                                child: Text(user['name'] ?? ''),
-                              ))
-                          .toList(),
-                      onChanged: (value) =>
-                          setState(() => _selectedReceiverUserId = value),
-                      decoration: const InputDecoration(
-                          labelText: 'Select Receiver',
-                          prefixIcon: Icon(Icons.person)),
-                      validator: (value) =>
-                          value == null || value.isEmpty ? 'Required' : null,
+                  TextFormField(
+                    controller: _receiverNameController,
+                    decoration: const InputDecoration(
+                      labelText: 'Receiver Name',
+                      prefixIcon: Icon(Icons.person),
                     ),
-                  if (_receiverType == 'manual') ...[
-                    TextFormField(
-                      controller: _receiverNameController,
-                      decoration: const InputDecoration(
-                          labelText: 'Receiver Name',
-                          prefixIcon: Icon(Icons.person)),
-                      validator: (value) =>
-                          value == null || value.isEmpty ? 'Required' : null,
+                    validator: (value) =>
+                        value == null || value.isEmpty ? 'Required' : null,
+                  ),
+                  const SizedBox(height: 8),
+                  TextFormField(
+                    controller: _receiverPhoneController,
+                    decoration: const InputDecoration(
+                      labelText: 'Receiver Phone',
+                      prefixIcon: Icon(Icons.phone),
                     ),
-                    const SizedBox(height: 8),
-                    TextFormField(
-                      controller: _receiverPhoneController,
-                      decoration: const InputDecoration(
-                          labelText: 'Receiver Phone',
-                          prefixIcon: Icon(Icons.phone)),
-                      validator: (value) =>
-                          value == null || value.isEmpty ? 'Required' : null,
+                    validator: (value) =>
+                        value == null || value.isEmpty ? 'Required' : null,
+                  ),
+                  const SizedBox(height: 8),
+                  TextFormField(
+                    controller: _receiverAddressController,
+                    decoration: const InputDecoration(
+                      labelText: 'Receiver Address',
+                      prefixIcon: Icon(Icons.location_on),
                     ),
-                    const SizedBox(height: 8),
-                    TextFormField(
-                      controller: _receiverAddressController,
-                      decoration: const InputDecoration(
-                          labelText: 'Receiver Address',
-                          prefixIcon: Icon(Icons.location_on)),
-                      validator: (value) =>
-                          value == null || value.isEmpty ? 'Required' : null,
-                    ),
-                  ],
+                    validator: (value) =>
+                        value == null || value.isEmpty ? 'Required' : null,
+                  ),
                   const SizedBox(height: 16),
-                  Text('Route',
-                      style: theme.textTheme.titleMedium
-                          ?.copyWith(fontWeight: FontWeight.w600)),
+                  Text(
+                    'Route',
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                   const SizedBox(height: 8),
                   DropdownButtonFormField<String>(
                     value: _selectedOriginCityId,
                     items: _cities
-                        .map((city) => DropdownMenuItem<String>(
-                              value: city['_id'] as String,
-                              child: Text(city['name'] ?? ''),
-                            ))
+                        .map(
+                          (city) => DropdownMenuItem<String>(
+                            value: city['_id'] as String,
+                            child: Text(city['name'] ?? ''),
+                          ),
+                        )
                         .toList(),
                     onChanged: (value) =>
                         setState(() => _selectedOriginCityId = value),
                     decoration: const InputDecoration(
-                        labelText: 'Origin City',
-                        prefixIcon: Icon(Icons.location_city)),
+                      labelText: 'Origin City',
+                      prefixIcon: Icon(Icons.location_city),
+                    ),
                     validator: (value) =>
                         value == null || value.isEmpty ? 'Required' : null,
                   ),
@@ -734,16 +705,19 @@ class _RegisterShipmentDialogState extends State<RegisterShipmentDialog> {
                   DropdownButtonFormField<String>(
                     value: _selectedDestinationCityId,
                     items: _cities
-                        .map((city) => DropdownMenuItem<String>(
-                              value: city['_id'] as String,
-                              child: Text(city['name'] ?? ''),
-                            ))
+                        .map(
+                          (city) => DropdownMenuItem<String>(
+                            value: city['_id'] as String,
+                            child: Text(city['name'] ?? ''),
+                          ),
+                        )
                         .toList(),
                     onChanged: (value) =>
                         setState(() => _selectedDestinationCityId = value),
                     decoration: const InputDecoration(
-                        labelText: 'Destination City',
-                        prefixIcon: Icon(Icons.location_city)),
+                      labelText: 'Destination City',
+                      prefixIcon: Icon(Icons.location_city),
+                    ),
                     validator: (value) =>
                         value == null || value.isEmpty ? 'Required' : null,
                   ),
@@ -769,32 +743,29 @@ class _RegisterShipmentDialogState extends State<RegisterShipmentDialog> {
                           backgroundColor: theme.colorScheme.primary,
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 32, vertical: 14),
+                            horizontal: 32,
+                            vertical: 14,
+                          ),
                           shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12)),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
                           textStyle: const TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.bold),
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                         onPressed: shipmentsProvider.isLoading
                             ? null
                             : () async {
                                 // Extra null/empty checks for required fields
-                                if (_receiverType == 'dropdown' &&
-                                    (_selectedReceiverUserId == null ||
-                                        _selectedReceiverUserId!.isEmpty)) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                        content:
-                                            Text('Please select a receiver.')),
-                                  );
-                                  return;
-                                }
                                 if (_selectedOriginCityId == null ||
                                     _selectedOriginCityId!.isEmpty) {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(
-                                        content: Text(
-                                            'Please select an origin city.')),
+                                      content: Text(
+                                        'Please select an origin city.',
+                                      ),
+                                    ),
                                   );
                                   return;
                                 }
@@ -802,36 +773,38 @@ class _RegisterShipmentDialogState extends State<RegisterShipmentDialog> {
                                     _selectedDestinationCityId!.isEmpty) {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(
-                                        content: Text(
-                                            'Please select a destination city.')),
+                                      content: Text(
+                                        'Please select a destination city.',
+                                      ),
+                                    ),
                                   );
                                   return;
                                 }
                                 if (_formKey.currentState!.validate()) {
-                                  final success =
-                                      await shipmentsProvider.createShipment(
-                                    receiverName: _receiverType == 'manual'
-                                        ? _receiverNameController.text.trim()
-                                        : '',
-                                    receiverPhone: _receiverType == 'manual'
-                                        ? _receiverPhoneController.text.trim()
-                                        : '',
-                                    receiverAddress: _receiverType == 'manual'
-                                        ? _receiverAddressController.text.trim()
-                                        : '',
-                                    originCity: _selectedOriginCityId ?? '',
-                                    destinationCity:
-                                        _selectedDestinationCityId ?? '',
-                                    receiverUserId: _receiverType == 'dropdown'
-                                        ? _selectedReceiverUserId
-                                        : null,
-                                  );
+                                  final success = await shipmentsProvider
+                                      .createShipment(
+                                        receiverName: _receiverNameController
+                                            .text
+                                            .trim(),
+                                        receiverPhone: _receiverPhoneController
+                                            .text
+                                            .trim(),
+                                        receiverAddress:
+                                            _receiverAddressController.text
+                                                .trim(),
+                                        originCity: _selectedOriginCityId ?? '',
+                                        destinationCity:
+                                            _selectedDestinationCityId ?? '',
+                                        receiverUserId: null,
+                                      );
                                   if (success && mounted) {
                                     Navigator.of(context).pop();
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       const SnackBar(
-                                          content: Text(
-                                              'Shipment registered successfully!')),
+                                        content: Text(
+                                          'Shipment registered successfully!',
+                                        ),
+                                      ),
                                     );
                                   }
                                 }
@@ -841,7 +814,10 @@ class _RegisterShipmentDialogState extends State<RegisterShipmentDialog> {
                                 width: 20,
                                 height: 20,
                                 child: CircularProgressIndicator(
-                                    strokeWidth: 2, color: Colors.white))
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              )
                             : const Text('Register'),
                       ),
                     ],

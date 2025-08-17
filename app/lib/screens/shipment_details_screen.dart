@@ -6,9 +6,11 @@ import 'package:provider/provider.dart';
 class ShipmentDetailsScreen extends StatefulWidget {
   final String shipmentId;
   final bool isSent;
-  const ShipmentDetailsScreen(
-      {Key? key, required this.shipmentId, required this.isSent})
-      : super(key: key);
+  const ShipmentDetailsScreen({
+    Key? key,
+    required this.shipmentId,
+    required this.isSent,
+  }) : super(key: key);
 
   @override
   State<ShipmentDetailsScreen> createState() => _ShipmentDetailsScreenState();
@@ -79,8 +81,9 @@ class _ShipmentDetailsScreenState extends State<ShipmentDetailsScreen> {
         padding: const EdgeInsets.all(24.0),
         child: Card(
           elevation: 4,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(18),
+          ),
           child: Padding(
             padding: const EdgeInsets.all(24.0),
             child: Column(
@@ -88,8 +91,11 @@ class _ShipmentDetailsScreenState extends State<ShipmentDetailsScreen> {
               children: [
                 Row(
                   children: [
-                    Icon(Icons.local_shipping,
-                        color: theme.colorScheme.primary, size: 28),
+                    Icon(
+                      Icons.local_shipping,
+                      color: theme.colorScheme.primary,
+                      size: 28,
+                    ),
                     const SizedBox(width: 16),
                     Expanded(
                       child: Text(
@@ -97,8 +103,9 @@ class _ShipmentDetailsScreenState extends State<ShipmentDetailsScreen> {
                             ? 'To: ${shipment!.receiverName}'
                             : 'From: ${shipment!.originCity}',
                         style: theme.textTheme.titleLarge?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: theme.colorScheme.primary),
+                          fontWeight: FontWeight.bold,
+                          color: theme.colorScheme.primary,
+                        ),
                       ),
                     ),
                   ],
@@ -111,8 +118,8 @@ class _ShipmentDetailsScreenState extends State<ShipmentDetailsScreen> {
                       color: shipment!.status == 'Delivered'
                           ? Colors.green
                           : shipment!.status == 'Picked Up'
-                              ? Colors.orange
-                              : Colors.grey,
+                          ? Colors.orange
+                          : Colors.grey,
                     ),
                     const SizedBox(width: 8),
                     _StatusChip(
@@ -125,9 +132,12 @@ class _ShipmentDetailsScreenState extends State<ShipmentDetailsScreen> {
                 ),
                 const SizedBox(height: 16),
                 Divider(),
-                Text(widget.isSent ? 'Receiver Info' : 'Sender Info',
-                    style: theme.textTheme.titleMedium
-                        ?.copyWith(fontWeight: FontWeight.w600)),
+                Text(
+                  widget.isSent ? 'Receiver Info' : 'Sender Info',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
                 const SizedBox(height: 8),
                 if (widget.isSent) ...[
                   Text('Name: ${shipment!.receiverName}'),
@@ -140,25 +150,32 @@ class _ShipmentDetailsScreenState extends State<ShipmentDetailsScreen> {
                     Text('Phone: ${shipment!.senderPhone}'),
                   if (shipment!.senderAddress != null)
                     Text('Address: ${shipment!.senderAddress}'),
-                  if (shipment!.senderName == null && 
-                      shipment!.senderPhone == null && 
+                  if (shipment!.senderName == null &&
+                      shipment!.senderPhone == null &&
                       shipment!.senderAddress == null)
                     Text('From: ${shipment!.originCity}'),
                 ],
                 const SizedBox(height: 16),
-                Text('Route',
-                    style: theme.textTheme.titleMedium
-                        ?.copyWith(fontWeight: FontWeight.w600)),
+                Text(
+                  'Route',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
                 const SizedBox(height: 8),
                 Text('From: ${shipment!.originCity}'),
                 Text('To: ${shipment!.destinationCity}'),
                 const SizedBox(height: 16),
                 if (shipment!.price != null)
-                  Text('Price: ${shipment!.price}',
-                      style: theme.textTheme.bodyLarge),
+                  Text(
+                    'Price: ${shipment!.price}',
+                    style: theme.textTheme.bodyLarge,
+                  ),
                 if (shipment!.weight != null)
-                  Text('Weight: ${shipment!.weight} kg',
-                      style: theme.textTheme.bodyLarge),
+                  Text(
+                    'Weight: ${shipment!.weight} kg',
+                    style: theme.textTheme.bodyLarge,
+                  ),
                 const SizedBox(height: 16),
                 Text('Created: ${shipment!.createdAt.toLocal()}'),
                 const SizedBox(height: 24),
@@ -179,15 +196,21 @@ class _ShipmentDetailsScreenState extends State<ShipmentDetailsScreen> {
                               if (success) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
-                                      content: Text(
-                                          'Payment processed successfully!')),
+                                    content: Text(
+                                      'Payment processed successfully!',
+                                    ),
+                                    backgroundColor: Colors.green,
+                                  ),
                                 );
                                 Navigator.pop(context);
-                              } else if (shipmentsProvider.error != null) {
+                              } else {
+                                // Show error message from provider or default message
+                                final errorMessage = shipmentsProvider.error ?? 'Payment failed. Please try again.';
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
-                                      content: Text(shipmentsProvider.error!),
-                                      backgroundColor: Colors.red),
+                                    content: Text(errorMessage),
+                                    backgroundColor: Colors.red,
+                                  ),
                                 );
                                 shipmentsProvider.clearErrorAfterShown();
                               }

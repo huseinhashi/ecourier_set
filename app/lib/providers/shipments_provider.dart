@@ -44,7 +44,7 @@ class Shipment {
     DateTime getDateTime(dynamic value) => value == null
         ? DateTime.now()
         : DateTime.tryParse(value.toString()) ?? DateTime.now();
-    
+
     // Extract sender information
     String? getSenderName(dynamic sender) {
       if (sender == null) return null;
@@ -52,14 +52,14 @@ class Shipment {
         return sender['name'].toString();
       return null;
     }
-    
+
     String? getSenderPhone(dynamic sender) {
       if (sender == null) return null;
       if (sender is Map && sender['phone'] != null)
         return sender['phone'].toString();
       return null;
     }
-    
+
     String? getSenderAddress(dynamic sender) {
       if (sender == null) return null;
       if (sender is Map && sender['address'] != null)
@@ -76,7 +76,8 @@ class Shipment {
       receiverAddress: getString(json['receiver']?['address']),
       originCity: getString(json['originCity']?['name'] ?? json['originCity']),
       destinationCity: getString(
-          json['destinationCity']?['name'] ?? json['destinationCity']),
+        json['destinationCity']?['name'] ?? json['destinationCity'],
+      ),
       price: getDouble(json['price']),
       createdAt: getDateTime(json['createdAt']),
       senderName: getSenderName(json['sender']),
@@ -95,7 +96,7 @@ class Shipment {
     DateTime getDateTime(dynamic value) => value == null
         ? DateTime.now()
         : DateTime.tryParse(value.toString()) ?? DateTime.now();
-    
+
     // Extract sender information
     String? getSenderName(dynamic sender) {
       if (sender == null) return null;
@@ -103,14 +104,14 @@ class Shipment {
         return sender['name'].toString();
       return null;
     }
-    
+
     String? getSenderPhone(dynamic sender) {
       if (sender == null) return null;
       if (sender is Map && sender['phone'] != null)
         return sender['phone'].toString();
       return null;
     }
-    
+
     String? getSenderAddress(dynamic sender) {
       if (sender == null) return null;
       if (sender is Map && sender['address'] != null)
@@ -197,8 +198,9 @@ class ShipmentsProvider extends ChangeNotifier {
         final List<dynamic> sentData = data['sent'] ?? [];
         final List<dynamic> receivedData = data['received'] ?? [];
         _sentShipments = sentData.map((e) => Shipment.fromJson(e)).toList();
-        _receivedShipments =
-            receivedData.map((e) => Shipment.fromJson(e)).toList();
+        _receivedShipments = receivedData
+            .map((e) => Shipment.fromJson(e))
+            .toList();
       } else {
         _setError(data['message'] ?? 'Failed to load shipments');
       }
@@ -295,8 +297,11 @@ class ShipmentsProvider extends ChangeNotifier {
       _setLoading(true);
       clearError();
       final response = await _shipmentsService.processPayment(shipmentId);
-      if (response['success']) {
-        await fetchShipments();
+      
+      // Always refresh shipments to get updated payment status
+      await fetchShipments();
+      
+      if (response['success'] == true) {
         return true;
       } else {
         _setError(response['message'] ?? 'Payment failed');
@@ -314,8 +319,10 @@ class ShipmentsProvider extends ChangeNotifier {
     try {
       _setLoading(true);
       clearError();
-      final response =
-          await _shipmentsService.setWeightAndPrice(shipmentId, weight);
+      final response = await _shipmentsService.setWeightAndPrice(
+        shipmentId,
+        weight,
+      );
       if (response['success'] == true) {
         await fetchCourierShipments();
         return true;
@@ -331,13 +338,19 @@ class ShipmentsProvider extends ChangeNotifier {
     }
   }
 
-  Future<bool> updateShipmentStatus(String shipmentId, String status,
-      {String? hubId}) async {
+  Future<bool> updateShipmentStatus(
+    String shipmentId,
+    String status, {
+    String? hubId,
+  }) async {
     try {
       _setLoading(true);
       clearError();
-      final response = await _shipmentsService
-          .updateShipmentStatus(shipmentId, status, hubId: hubId);
+      final response = await _shipmentsService.updateShipmentStatus(
+        shipmentId,
+        status,
+        hubId: hubId,
+      );
       if (response['success'] == true) {
         await fetchCourierShipments();
         return true;
@@ -378,7 +391,7 @@ class ShipmentsProvider extends ChangeNotifier {
       _setLoading(true);
       clearError();
       final response = await _shipmentsService.getShipmentFromQrCode(qrCodeId);
-      
+
       if (response['success'] == true) {
         return response['data'];
       } else {
